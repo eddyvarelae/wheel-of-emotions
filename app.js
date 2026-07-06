@@ -259,4 +259,9 @@
   svg.addEventListener("click", spin);
 
   applyLang(lang);
+
+  // test hook: /?autospin=1 spins once on load (used for e2e verification)
+  if (new URLSearchParams(location.search).get("autospin")) {
+    setTimeout(spin, 600);
+  }
 })();
