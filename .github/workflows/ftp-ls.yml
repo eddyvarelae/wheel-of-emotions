@@ -1,0 +1,21 @@
+name: FTP directory listing (temporary)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    steps:
+      - name: List FTP root and likely subdomain folders
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          echo "== FTP root =="
+          curl -s --max-time 30 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/" -l || echo "(root listing failed)"
+          for d in wheelofemotions wheelofemotions.eddy.mx domains; do
+            echo "== $d/ =="
+            curl -s --max-time 30 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$d/" -l || echo "(not found)"
+          done
