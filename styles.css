@@ -1,0 +1,228 @@
+:root {
+  --bg: #f6f1e7;
+  --ink: #3a3530;
+  --muted: #8a8177;
+  --card: #ffffff;
+  --accent: #e8756f;
+  --wheel-size: min(92vw, 62vh, 640px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: radial-gradient(circle at 50% 0%, #fdfaf3, var(--bg) 70%);
+  color: var(--ink);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+.app {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 16px clamp(12px, 4vw, 28px) calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+}
+
+/* header */
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+h1 {
+  font-size: clamp(1.25rem, 4.5vw, 1.9rem);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.lang-switch {
+  display: flex;
+  gap: 4px;
+  background: #ece5d8;
+  border-radius: 999px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.lang-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lang-switch button[aria-pressed="true"] {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.tagline {
+  width: 100%;
+  margin: 8px 0 4px;
+  color: var(--muted);
+  font-size: clamp(0.9rem, 3.2vw, 1.05rem);
+}
+
+/* wheel */
+.stage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.wheel-wrap {
+  position: relative;
+  width: 100%;
+  max-width: var(--wheel-size);
+  aspect-ratio: 1;
+  margin-top: 22px;
+}
+
+#wheel {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 24px rgba(90, 70, 40, 0.18));
+  will-change: transform;
+}
+
+#wheel text {
+  pointer-events: none;
+  user-select: none;
+}
+
+.leaf-seg.selected {
+  stroke: var(--ink);
+  stroke-width: 4;
+  filter: brightness(1.06);
+}
+
+.pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 26px solid var(--ink);
+  z-index: 2;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+}
+
+.spin-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14%;
+  height: 14%;
+  min-width: 58px;
+  min-height: 58px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: clamp(0.7rem, 2vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), inset 0 0 0 3px rgba(255, 255, 255, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  z-index: 2;
+}
+
+.spin-btn:hover:not(:disabled) {
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+.spin-btn:active:not(:disabled) {
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+.spin-btn:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+/* result */
+.result {
+  margin-top: 26px;
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  border-radius: 18px;
+  border-top: 6px solid var(--accent);
+  box-shadow: 0 8px 26px rgba(90, 70, 40, 0.14);
+  padding: 18px 22px 20px;
+  text-align: center;
+  animation: pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+@keyframes pop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.result p { margin: 0; }
+
+.result-lead {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.result-emotion {
+  font-size: clamp(1.8rem, 8vw, 2.6rem);
+  font-weight: 800;
+  margin: 4px 0 !important;
+  filter: saturate(1.4) brightness(0.82);
+}
+
+.result-path {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.result-again {
+  margin-top: 10px !important;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.footer {
+  margin-top: 26px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result { animation: none; }
+}
+
+/* wide screens: give the wheel a bit more room */
+@media (min-width: 900px) and (min-height: 800px) {
+  :root { --wheel-size: min(70vh, 680px); }
+}

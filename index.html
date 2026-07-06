@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Wheel of Emotions</title>
+  <meta name="description" content="Spin the wheel of emotions and explore how you feel.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎡</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1 id="title">Wheel of Emotions</h1>
+      <nav class="lang-switch" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="es" aria-pressed="false">ES</button>
+      </nav>
+    </header>
+
+    <p class="tagline" id="tagline"></p>
+
+    <main class="stage">
+      <div class="wheel-wrap">
+        <div class="pointer" aria-hidden="true"></div>
+        <svg id="wheel" viewBox="-500 -500 1000 1000" role="img" aria-labelledby="title"></svg>
+        <button type="button" id="spin" class="spin-btn"></button>
+      </div>
+
+      <section id="result" class="result" aria-live="polite" hidden>
+        <p class="result-lead" id="result-lead"></p>
+        <p class="result-emotion" id="result-emotion"></p>
+        <p class="result-path" id="result-path"></p>
+        <p class="result-again" id="result-again"></p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <small id="credit"></small>
+    </footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
