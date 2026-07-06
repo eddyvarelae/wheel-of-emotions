@@ -27,6 +27,9 @@
 
   function track(name, params) {
     if (typeof window.gtag === "function") window.gtag("event", name, params || {});
+    if (window.posthog && typeof window.posthog.capture === "function") {
+      window.posthog.capture(name, params || {});
+    }
   }
 
   /* ---------- geometry helpers ---------- */
