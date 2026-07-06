@@ -1,0 +1,10 @@
+# HTML always revalidates so deploys reach browsers immediately;
+# versioned assets (?v=<sha>) can cache long since the URL changes per deploy.
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
