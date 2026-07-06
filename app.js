@@ -23,6 +23,12 @@
   var selectedLeaf = -1;
   var leaves = []; // { core, secondary, leaf, start, end, pathEl }
 
+  /* ---------- analytics (no-op when GA isn't loaded, e.g. local dev) ---------- */
+
+  function track(name, params) {
+    if (typeof window.gtag === "function") window.gtag("event", name, params || {});
+  }
+
   /* ---------- geometry helpers ---------- */
 
   // Angles in degrees, 0 = top of the wheel, increasing clockwise.
@@ -139,6 +145,7 @@
     spinBtn.disabled = true;
     resultEl.hidden = true;
     if (selectedLeaf >= 0) leaves[selectedLeaf].pathEl.classList.remove("selected");
+    track("spin", { lang: lang });
 
     var target = Math.floor(Math.random() * leaves.length);
     var leaf = leaves[target];
@@ -165,6 +172,14 @@
       spinBtn.disabled = false;
       selectedLeaf = findLeafAt(angleUnderPointer(rotation));
       showResult();
+      var hit = leaves[selectedLeaf];
+      // English labels as canonical values so results aggregate across languages
+      track("spin_result", {
+        emotion: hit.leaf.t.en,
+        secondary: hit.secondary.t.en,
+        core: hit.core.t.en,
+        lang: lang,
+      });
     }
     svg.addEventListener("transitionend", finish, { once: true });
     setTimeout(finish, duration + 300); // fallback if transitionend is missed
@@ -232,7 +247,9 @@
 
   document.querySelectorAll(".lang-switch button").forEach(function (b) {
     b.addEventListener("click", function () {
-      if (!spinning) applyLang(b.dataset.lang);
+      if (spinning || b.dataset.lang === lang) return;
+      applyLang(b.dataset.lang);
+      track("language_change", { lang: lang });
     });
   });
   spinBtn.addEventListener("click", spin);
