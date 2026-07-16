@@ -7,7 +7,7 @@
     hub: 72,
     core: { inner: 72, outer: 190, labelR: 131, font: 27, maxLen: 100 },
     secondary: { inner: 190, outer: 335, labelR: 262, font: 20, maxLen: 128 },
-    leaf: { inner: 335, outer: 494, labelR: 414, font: 15.5, maxLen: 142 },
+    leaf: { inner: 335, outer: 494, labelR: 414, font: 19, maxLen: 142 },
   };
   var SPIN_TURNS_MIN = 4;
   var SPIN_DURATION_MS = 4200;
@@ -110,14 +110,14 @@
         var secEnd = cursor + sec.children.length * unit;
         el("path", {
           d: sectorPath(RINGS.secondary.inner, RINGS.secondary.outer, secStart, secEnd),
-          fill: mixWithWhite(core.color, 0.35), stroke: "#fff", "stroke-width": 2,
+          fill: mixWithWhite(core.color, 0.25), stroke: "#fff", "stroke-width": 2,
         }, g);
 
         sec.children.forEach(function (leaf) {
           var a0 = cursor, a1 = cursor + unit;
           var p = el("path", {
             d: sectorPath(RINGS.leaf.inner, RINGS.leaf.outer, a0, a1),
-            fill: mixWithWhite(core.color, 0.55), stroke: "#fff", "stroke-width": 1.5,
+            fill: mixWithWhite(core.color, 0.75), stroke: "#fff", "stroke-width": 1.5,
             "class": "leaf-seg",
           }, g);
           leaves.push({ core: core, secondary: sec, leaf: leaf, start: a0, end: a1, pathEl: p });

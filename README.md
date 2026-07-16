@@ -1,8 +1,8 @@
 # Wheel of Emotions 🎡
 
-A spinnable wheel of emotions for mobile and desktop. Give it a spin and it lands on one of 82 emotions, showing the path from the core feeling down to the specific one (e.g. *Surprised › Excited › Eager*).
+A spinnable wheel of emotions for mobile and desktop. Give it a spin and it lands on one of 50 emotions, showing the path from the core feeling down to the specific one (e.g. *Happy › Excited › Eager*).
 
-Based on [Geoffrey Roberts' Emotion Wheel](https://feelingswheel.com/) — 7 core emotions → 41 secondary → 82 outer.
+Based on the classic feelings wheel — 5 core emotions → 25 secondary → 50 outer.
 
 ## Features
 
