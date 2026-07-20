@@ -147,6 +147,7 @@
     spinning = true;
     spinBtn.disabled = true;
     resultEl.hidden = true;
+    if (window.Checkin) Checkin.reset();
     if (selectedLeaf >= 0) leaves[selectedLeaf].pathEl.classList.remove("selected");
     track("spin", { lang: lang });
 
@@ -209,6 +210,7 @@
     resultEl.style.setProperty("--accent", hit.core.color);
     resultEl.hidden = false;
     if (navigator.vibrate) navigator.vibrate(35);
+    if (window.Checkin) Checkin.offer(hit, lang);
   }
 
   /* ---------- i18n ---------- */
@@ -243,6 +245,7 @@
     svg.style.transform = "rotate(" + rotation + "deg)";
     void svg.getBoundingClientRect();
     svg.style.transition = prev;
+    if (window.Checkin) Checkin.setLang(lang);
     if (!resultEl.hidden) showResult();
   }
 

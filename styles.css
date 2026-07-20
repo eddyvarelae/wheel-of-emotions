@@ -212,6 +212,235 @@ h1 {
   font-size: 0.8rem;
 }
 
+/* guided check-in */
+.checkin {
+  margin-top: 14px;
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: 0 8px 26px rgba(90, 70, 40, 0.14);
+  padding: 18px 22px 20px;
+  text-align: center;
+  animation: pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e4ddd1;
+}
+
+.dot.past { background: #c9c0b1; }
+.dot.on { background: var(--ink); }
+
+.checkin-q {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.checkin-hint {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.checkin-hint.evidence {
+  margin-top: 12px;
+  font-style: italic;
+}
+
+.checkin-body {
+  margin: 10px 0 0;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.checkin-body.challenge {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.chip {
+  border: 1.5px solid #e4ddd1;
+  background: #faf7f0;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.chip.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.chips-wide .chip {
+  width: 100%;
+  border-radius: 14px;
+  text-align: left;
+}
+
+.own-thought {
+  margin-top: 12px;
+  width: 100%;
+  border: 1.5px solid #e4ddd1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 0.92rem;
+  background: #faf7f0;
+  color: var(--ink);
+}
+
+.own-thought:focus { outline: 2px solid var(--ink); }
+
+.islider { margin-top: 14px; }
+
+.islider-val {
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+.islider input[type="range"] {
+  width: 100%;
+  accent-color: var(--ink);
+}
+
+.islider-scale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.checkin-nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.next-btn {
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 26px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ghost-btn {
+  border: 1.5px solid #e4ddd1;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* patterns dashboard */
+.insights {
+  margin-top: 18px;
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: 0 8px 26px rgba(90, 70, 40, 0.14);
+  padding: 18px 22px 20px;
+}
+
+.insights h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.insights .checkin-hint { text-align: center; }
+
+.insights .ghost-btn {
+  display: block;
+  margin: 16px auto 0;
+}
+
+.stat { margin-top: 16px; }
+
+.stat h3 {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.88rem;
+}
+
+.stat-label {
+  flex: 0 0 42%;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.75;
+}
+
+.stat-count {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.link-btn {
+  display: block;
+  margin: 0 auto 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .footer {
   margin-top: 26px;
   color: var(--muted);
@@ -219,7 +448,7 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .result { animation: none; }
+  .result, .checkin { animation: none; }
 }
 
 /* wide screens: give the wheel a bit more room */
