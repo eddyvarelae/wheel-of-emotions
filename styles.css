@@ -270,6 +270,53 @@ h1 {
   font-size: 1.05rem;
 }
 
+/* body silhouette */
+.bodymap { margin-top: 10px; }
+
+.bodymap-svg {
+  display: block;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.silhouette {
+  fill: #eee7db;
+  stroke: #d8d0c0;
+  stroke-width: 1.5;
+}
+
+.zone {
+  cursor: pointer;
+  outline: none;
+}
+
+.zone > * {
+  fill: transparent;
+  stroke: #c9c0b1;
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  transition: fill 0.15s ease;
+}
+
+.zone:hover > *, .zone:focus-visible > * {
+  stroke: var(--ink);
+}
+
+.zone.on > * {
+  fill: rgba(58, 53, 48, 0.8);
+  stroke: var(--ink);
+  stroke-dasharray: none;
+}
+
+.bodymap-caption {
+  min-height: 1.2em;
+  margin-top: 4px;
+}
+
+.sensations-lead { margin-top: 14px; }
+
+.need-line { font-weight: 700; }
+
 .chips {
   display: flex;
   flex-wrap: wrap;

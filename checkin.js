@@ -1,14 +1,17 @@
 /* Wheel of Emotions — guided check-in flow + local patterns dashboard.
  * Spin → Identify → Understand → Regulate → Grow, in about a minute.
- * Answers stay on the device (localStorage); analytics get aggregate
- * properties only via the same track() convention as app.js.
+ * Everything is specific to the emotion (sensations, need, tools,
+ * question, challenge) per MJ's evidence-based spec. Answers stay on
+ * the device (localStorage); analytics get aggregate properties only
+ * via the same track() convention as app.js.
  */
 window.Checkin = (function () {
   "use strict";
 
   var STORE_KEY = "wheel-checkins";
   var STORE_MAX = 500;
-  var STEPS = ["intensity", "body", "trigger", "thought", "need", "understand", "regulate", "challenge"];
+  var STEPS = ["intensity", "body", "trigger", "thought", "need", "understand", "regulate", "challenge", "rerate"];
+  var SVG_NS = "http://www.w3.org/2000/svg";
 
   var box = document.getElementById("checkin");
   var insightsBox = document.getElementById("insights");
@@ -25,7 +28,19 @@ window.Checkin = (function () {
   }
 
   function ui() { return UI_STRINGS[state ? state.lang : document.documentElement.lang] || UI_STRINGS.en; }
-  function guidance() { return CORE_GUIDANCE[state.hit.core.id]; }
+
+  // core guidance, with secondary-level overrides (e.g. Peaceful and
+  // Excited feel different in the body than generic Happy)
+  function guidanceFor() {
+    var base = CORE_GUIDANCE[state.hit.core.id];
+    var ov = base.overrides && base.overrides[state.hit.secondary.t.en];
+    if (!ov) return base;
+    var merged = {};
+    var k;
+    for (k in base) merged[k] = base[k];
+    for (k in ov) merged[k] = ov[k];
+    return merged;
+  }
 
   /* ---------- tiny DOM helpers ---------- */
 
@@ -52,23 +67,6 @@ window.Checkin = (function () {
       });
     });
     return row;
-  }
-
-  // multi-select with an exclusive "none of these" option
-  function multiSet(set, noneId) {
-    return {
-      isOn: function (id) { return set.has(id); },
-      toggle: function (id) {
-        if (id === noneId) {
-          var wasOn = set.has(noneId);
-          set.clear();
-          if (!wasOn) set.add(noneId);
-        } else {
-          set.delete(noneId);
-          set.has(id) ? set.delete(id) : set.add(id);
-        }
-      },
-    };
   }
 
   function singleVal(get, set) {
@@ -105,10 +103,98 @@ window.Checkin = (function () {
     return box;
   }
 
+  function slider(parent, get, set) {
+    var wrap = el("div", "islider", null, parent);
+    var val = el("div", "islider-val", String(get()), wrap);
+    var input = el("input", null, null, wrap);
+    input.type = "range";
+    input.min = "0"; input.max = "10"; input.step = "1";
+    input.value = String(get());
+    input.addEventListener("input", function () {
+      set(Number(input.value));
+      val.textContent = input.value;
+    });
+    var scale = el("div", "islider-scale", null, wrap);
+    el("span", null, "0", scale);
+    el("span", null, "10", scale);
+  }
+
   function next() {
     state.step += 1;
     if (state.step >= STEPS.length) finish();
     else renderStep();
+  }
+
+  /* ---------- body silhouette (interoception by location) ---------- */
+
+  var SILHOUETTE = [
+    ["circle", { cx: 60, cy: 26, r: 17 }],
+    ["rect", { x: 53, y: 41, width: 14, height: 12, rx: 4 }],
+    ["rect", { x: 34, y: 52, width: 52, height: 96, rx: 18 }],
+    ["rect", { x: 18, y: 58, width: 13, height: 92, rx: 6.5 }],
+    ["rect", { x: 89, y: 58, width: 13, height: 92, rx: 6.5 }],
+    ["circle", { cx: 24.5, cy: 156, r: 8 }],
+    ["circle", { cx: 95.5, cy: 156, r: 8 }],
+    ["rect", { x: 39, y: 145, width: 18, height: 96, rx: 8 }],
+    ["rect", { x: 63, y: 145, width: 18, height: 96, rx: 8 }],
+  ];
+
+  var ZONE_SHAPES = {
+    head: [["circle", { cx: 60, cy: 26, r: 19 }]],
+    throat: [["ellipse", { cx: 60, cy: 47, rx: 11, ry: 8 }]],
+    chest: [["ellipse", { cx: 60, cy: 76, rx: 23, ry: 16 }]],
+    stomach: [["ellipse", { cx: 60, cy: 113, rx: 21, ry: 15 }]],
+    hands: [["circle", { cx: 24.5, cy: 156, r: 11 }], ["circle", { cx: 95.5, cy: 156, r: 11 }]],
+    legs: [["rect", { x: 39, y: 150, width: 18, height: 88, rx: 8 }], ["rect", { x: 63, y: 150, width: 18, height: 88, rx: 8 }]],
+  };
+
+  function svgEl(name, attrs, parent) {
+    var n = document.createElementNS(SVG_NS, name);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+
+  function renderBodyMap(parent, zonesSet, onTap) {
+    var wrap = el("div", "bodymap", null, parent);
+    var svg = svgEl("svg", { viewBox: "0 0 120 250", "class": "bodymap-svg" }, null);
+    wrap.appendChild(svg);
+    SILHOUETTE.forEach(function (shape) {
+      svgEl(shape[0], shape[1], svg).setAttribute("class", "silhouette");
+    });
+    var caption = el("p", "checkin-hint bodymap-caption", "", wrap);
+    var zoneEls = {};
+
+    function refresh() {
+      CHECKIN_DATA.bodyZones.forEach(function (zone) {
+        var on = zonesSet.has(zone.id);
+        zoneEls[zone.id].classList.toggle("on", on);
+        zoneEls[zone.id].setAttribute("aria-pressed", String(on));
+      });
+      caption.textContent = CHECKIN_DATA.bodyZones
+        .filter(function (zone) { return zonesSet.has(zone.id); })
+        .map(function (zone) { return zone.t[state.lang]; })
+        .join(" · ") || " ";
+    }
+
+    CHECKIN_DATA.bodyZones.forEach(function (zone) {
+      var g = svgEl("g", { "class": "zone", role: "button", tabindex: "0" }, svg);
+      g.setAttribute("aria-label", zone.t[state.lang]);
+      ZONE_SHAPES[zone.id].forEach(function (shape) { svgEl(shape[0], shape[1], g); });
+      function toggle() {
+        zonesSet.has(zone.id) ? zonesSet.delete(zone.id) : zonesSet.add(zone.id);
+        if (onTap) onTap();
+        refresh();
+      }
+      g.addEventListener("click", toggle);
+      g.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+      });
+      zoneEls[zone.id] = g;
+    });
+
+    refresh();
+    return refresh;
   }
 
   /* ---------- steps ---------- */
@@ -136,25 +222,47 @@ window.Checkin = (function () {
 
     intensity: function () {
       card(ui().intensityQ, ui().intensityHint);
-      var wrap = el("div", "islider", null, box);
-      var val = el("div", "islider-val", String(state.answers.intensity), wrap);
-      var input = el("input", null, null, wrap);
-      input.type = "range";
-      input.min = "0"; input.max = "10"; input.step = "1";
-      input.value = String(state.answers.intensity);
-      input.addEventListener("input", function () {
-        state.answers.intensity = Number(input.value);
-        val.textContent = input.value;
-      });
-      var scale = el("div", "islider-scale", null, wrap);
-      el("span", null, "0", scale);
-      el("span", null, "10", scale);
+      slider(box,
+        function () { return state.answers.intensity; },
+        function (v) { state.answers.intensity = v; });
       nav(box, ui().next, next);
     },
 
     body: function () {
       card(ui().bodyQ, ui().multiHint);
-      chipRow(box, CHECKIN_DATA.body, multiSet(state.answers.body, "none"));
+      var zonesSet = state.answers.body;
+      var sensSet = state.answers.sensations;
+      var row, refreshZones;
+
+      function syncRow() {
+        row.querySelectorAll(".chip").forEach(function (c, i) {
+          c.classList.toggle("on", sensSet.has(items[i].id));
+        });
+      }
+
+      refreshZones = renderBodyMap(box, zonesSet, function () {
+        sensSet.delete("none");
+        syncRow();
+      });
+
+      el("p", "checkin-hint sensations-lead", ui().sensationsLead, box);
+      var items = guidanceFor().sensations.map(function (s) { return { id: s.en, t: s }; });
+      items.push({ id: "none", t: { en: UI_STRINGS.en.noneBody, es: UI_STRINGS.es.noneBody } });
+      row = chipRow(box, items, {
+        isOn: function (id) { return sensSet.has(id); },
+        toggle: function (id) {
+          if (id === "none") {
+            var wasOn = sensSet.has("none");
+            sensSet.clear();
+            zonesSet.clear();
+            if (!wasOn) sensSet.add("none");
+          } else {
+            sensSet.delete("none");
+            sensSet.has(id) ? sensSet.delete(id) : sensSet.add(id);
+          }
+        },
+        after: function () { refreshZones(); },
+      });
       nav(box, ui().next, next);
     },
 
@@ -193,36 +301,61 @@ window.Checkin = (function () {
 
     need: function () {
       card(ui().needQ, ui().multiHint);
-      chipRow(box, CHECKIN_DATA.needs, multiSet(state.answers.need, "unknown"));
+      var set = state.answers.need;
+      chipRow(box, CHECKIN_DATA.needs, {
+        isOn: function (id) { return set.has(id); },
+        toggle: function (id) {
+          if (id === "unknown") {
+            var wasOn = set.has("unknown");
+            set.clear();
+            if (!wasOn) set.add("unknown");
+          } else {
+            set.delete("unknown");
+            set.has(id) ? set.delete(id) : set.add(id);
+          }
+        },
+      });
       nav(box, ui().next, next);
     },
 
     understand: function () {
       card(ui().understandTitle);
-      el("p", "checkin-body", guidance().purpose[state.lang], box);
+      var g = guidanceFor();
+      el("p", "checkin-body", ui().noticingTpl.replace("{e}", g.noun[state.lang]), box);
+      el("p", "checkin-body", g.purpose[state.lang], box);
+      el("p", "checkin-body need-line", ui().needTpl.replace("{n}", g.need[state.lang]), box);
       el("p", "checkin-hint", ui().normalize, box);
       nav(box, ui().next, next);
     },
 
     regulate: function () {
-      card(ui().regulateQ);
-      var items = guidance().tools.map(function (tool, i) {
-        return { id: String(i), t: { en: tool.en, es: tool.es } };
+      var g = guidanceFor();
+      card(ui().regulateQ, g.savor ? g.savor[state.lang] : null);
+      var items = g.tools.map(function (tool, i) {
+        return { id: String(i), t: tool };
       });
-      // reuse chip row; tool chips are wider, single-select
       var row = chipRow(box, items, singleVal(
         function () { return state.answers.tool; },
         function (v) { state.answers.tool = v; }
       ));
       row.classList.add("chips-wide");
-      el("p", "checkin-hint evidence", guidance().question[state.lang], box);
+      el("p", "checkin-hint evidence", g.question[state.lang], box);
       nav(box, ui().next, next);
     },
 
     challenge: function () {
       card(ui().challengeTitle);
-      el("p", "checkin-body challenge", guidance().challenge[state.lang], box);
+      el("p", "checkin-body challenge", guidanceFor().challenge[state.lang], box);
       el("p", "checkin-hint evidence", ui().futureYou, box);
+      nav(box, ui().next, next);
+    },
+
+    rerate: function () {
+      card(ui().rerateQ, ui().rerateHint);
+      if (state.answers.intensityAfter == null) state.answers.intensityAfter = state.answers.intensity;
+      slider(box,
+        function () { return state.answers.intensityAfter; },
+        function (v) { state.answers.intensityAfter = v; });
       nav(box, ui().doneBtn, next);
     },
   };
@@ -237,6 +370,12 @@ window.Checkin = (function () {
     box.hidden = false;
     el("p", "checkin-q", ui().completeTitle, box);
     el("p", "checkin-body", ui().completeMsg, box);
+    var before = state.answers.intensity;
+    var after = state.answers.intensityAfter;
+    if (after != null) {
+      var tpl = after < before ? ui().deltaDown : ui().deltaFlat;
+      el("p", "checkin-hint", tpl.replace("{0}", String(before)).replace("{1}", String(after)), box);
+    }
     nav(box, ui().patterns, function () {
       openInsights();
       insightsBox.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -248,8 +387,10 @@ window.Checkin = (function () {
     track("checkin_complete", {
       emotion: state.hit.leaf.t.en,
       core: state.hit.core.id,
-      intensity: state.answers.intensity,
+      intensity_before: state.answers.intensity,
+      intensity_after: state.answers.intensityAfter,
       body: Array.from(state.answers.body).join(",") || null,
+      sensations: Array.from(state.answers.sensations).join(",") || null,
       trigger: state.answers.trigger,
       thought: state.answers.thought,
       need: Array.from(state.answers.need).join(",") || null,
@@ -274,7 +415,9 @@ window.Checkin = (function () {
       emotion: state.hit.leaf.t.en,
       core: state.hit.core.id,
       intensity: state.answers.intensity,
+      intensityAfter: state.answers.intensityAfter,
       body: Array.from(state.answers.body),
+      sensations: Array.from(state.answers.sensations),
       trigger: state.answers.trigger,
       thought: state.answers.thought === "own"
         ? (state.answers.ownThought || "own") : state.answers.thought,
@@ -308,10 +451,22 @@ window.Checkin = (function () {
       list.forEach(function (item) { m[item.id] = item.t[lang]; });
       return m;
     };
+    // sensations are stored as their English text; map across all cores + overrides
+    var sensations = {};
+    Object.keys(CORE_GUIDANCE).forEach(function (coreId) {
+      var g = CORE_GUIDANCE[coreId];
+      (g.sensations || []).forEach(function (s) { sensations[s.en] = s[lang]; });
+      var ov = g.overrides || {};
+      Object.keys(ov).forEach(function (key) {
+        (ov[key].sensations || []).forEach(function (s) { sensations[s.en] = s[lang]; });
+      });
+    });
+    sensations.none = UI_STRINGS[lang].noneBody;
     return {
       emotion: emotion,
       trigger: byId(CHECKIN_DATA.triggers),
-      body: byId(CHECKIN_DATA.body),
+      body: byId(CHECKIN_DATA.bodyZones),
+      sensations: sensations,
       tool: function (key) {
         var parts = key.split(":");
         var g = CORE_GUIDANCE[parts[0]];
@@ -362,6 +517,7 @@ window.Checkin = (function () {
       statList(insightsBox, strings.statEmotions, topCounts(records.map(function (r) { return r.emotion; }), 5).map(label(maps.emotion)));
       statList(insightsBox, strings.statTriggers, topCounts(records.map(function (r) { return r.trigger; }), 5).map(label(maps.trigger)));
       statList(insightsBox, strings.statBody, topCounts(records.reduce(function (a, r) { return a.concat(r.body || []); }, []), 5).map(label(maps.body)));
+      statList(insightsBox, strings.statSensations, topCounts(records.reduce(function (a, r) { return a.concat(r.sensations || []); }, []), 5).map(label(maps.sensations)));
       statList(insightsBox, strings.statTools, topCounts(records.map(function (r) { return r.tool; }), 5).map(label(maps.tool)));
     }
 
@@ -389,7 +545,17 @@ window.Checkin = (function () {
       lang: lang,
       emotionEn: hit.leaf.t.en,
       step: -1,
-      answers: { intensity: 5, body: new Set(), trigger: null, thought: null, ownThought: "", need: new Set(), tool: null },
+      answers: {
+        intensity: 5,
+        intensityAfter: null,
+        body: new Set(),
+        sensations: new Set(),
+        trigger: null,
+        thought: null,
+        ownThought: "",
+        need: new Set(),
+        tool: null,
+      },
     };
     resultAgain.hidden = true;
     renderStep();
